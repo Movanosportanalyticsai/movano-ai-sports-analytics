@@ -1,0 +1,1538 @@
+const LOGO_BADGE = 'assets/logo-badge.png';
+function loadImage(src){
+  return new Promise((res,rej)=>{
+    const img = new Image();
+    img.onload = ()=>res(img);
+    img.onerror = rej;
+    img.src = src;
+  });
+}
+const TR = {
+  fr: {
+    eyebrow: "SPORTS ANALYTICS",
+    tagline: "Intelligence artificielle d'analyse statistique du football",
+    meta: "xG attendus<br>d'après forme &amp; historique",
+    free: "Outil gratuit, à titre indicatif uniquement",
+    age: "18+ · Jouez de manière responsable",
+    guideTitle: "Comment l'utiliser",
+    guideList: [
+      "Renseigne le nom des deux équipes.",
+      "Indique les buts marqués et encaissés en moyenne sur les 5 derniers matchs de chaque équipe.",
+      "Clique sur les boutons de forme (V / N / D) pour refléter les 5 derniers résultats, du plus ancien au plus récent.",
+      "Laisse la moyenne de la ligue par défaut, sauf si tu as une valeur plus précise pour la compétition concernée.",
+      "Clique sur \"Calculer le pronostic\" pour obtenir les buts attendus, les probabilités et le niveau de risque."
+    ],
+    homeLabel: "Domicile", awayLabel: "Extérieur",
+    scored: "Buts marqués / match (5 derniers)",
+    conceded: "Buts encaissés / match (5 derniers)",
+    xgScored: "xG marqués / match (5 derniers)",
+    xgConceded: "xG encaissés / match (5 derniers)",
+    xgToggle: "Utiliser les xG (expected goals) plutôt que les buts marqués, si tu les as",
+    avgSummary: "Calculer la moyenne à partir des derniers matchs",
+    avgFill: "Remplir automatiquement",
+    avgMatchLabel: n => `M${n}`,
+    avgScoredPh: "buts marqués", avgConcededPh: "buts encaissés",
+    downloadImg: "📥 Télécharger en image",
+    downloadImgSmall: "📥 Image",
+    h2hTitle: "Confrontations directes (H2H) — optionnel",
+    h2hDesc: "Sur les confrontations directes récentes, qui domine ?",
+    h2hNeutral: "Équilibré / pas de tendance nette",
+    h2hHome: "Domicile domine l'historique",
+    h2hStrongHome: "Domicile domine largement",
+    h2hAway: "Extérieur domine l'historique",
+    h2hStrongAway: "Extérieur domine largement",
+    confidenceLabel: "Indice de confiance",
+    top10Title: "Top 10 des scores les plus probables",
+    top2Title: "Les 2 scores exacts les plus probables",
+    rank1: "N°1 — le plus probable", rank2: "N°2 — deuxième plus probable",
+    confHigh: "Confiance élevée", confMid: "Confiance modérée", confLow: "Confiance faible",
+    form: "Forme (du plus ancien au plus récent)",
+    homeAdv: "▲ avantage du terrain appliqué",
+    league: "Moyenne de buts de la ligue / équipe / match",
+    lgDefault: "Je ne sais pas / autre — valeur par défaut",
+    lgL1: "Ligue 1 (≈1.35)", lgPL: "Premier League (≈1.45)", lgLiga: "Liga (≈1.35)",
+    lgSerieA: "Serie A (≈1.40)", lgBund: "Bundesliga (≈1.55)", lgUCL: "Ligue des champions (≈1.40)",
+    compute: "Calculer le pronostic",
+    xgHome: "xG domicile", xgAway: "xG extérieur",
+    legHomeWord: "Victoire dom.", legDrawWord: "Nul", legAwayWord: "Victoire ext.",
+    matrixTitle: "Probabilité par score exact",
+    likelyPrefix: "Score le plus probable :",
+    footerModel: "Modèle : force d'attaque/défense relative à la moyenne de la ligue, ajustée par la forme récente (pondération croissante sur les 5 derniers matchs), puis distribution de Poisson sur les buts attendus. Outil indicatif — n'intègre pas blessures, absences ni contexte du match.",
+    footerDisclaimer: "⚠ Ce pronostic est une estimation statistique, pas une certitude. Aucun résultat sportif n'est garanti : si tu paries, ne mise que ce que tu peux te permettre de perdre. Réservé aux personnes majeures (18+). Jouez de manière responsable.",
+    brand: 'MOVANO AI — Code promo 1xbet : <b>Movano29</b>',
+    version: "Version 1.0 | Créé le 30 juillet 2026",
+    copyright: "© Copyright 2026 Movano. All Rights Reserved.",
+    contact: 'Une difficulté avec l\'outil ? Assistance : <b>01 63 56 88 29</b>',
+    contactTitle: "Contactez-nous",
+    contactSub: "Une question ? Un problème technique ? Une suggestion pour améliorer MOVANO AI SPORTS ANALYTICS ?",
+    contactHours: "Support : lundi – dimanche, 08h00 – 22h00 (GMT+1)",
+    contactMission: "Notre mission : fournir des analyses statistiques avancées pour aider les passionnés de football à mieux s'informer — jamais des garanties de gain.",
+    officialSite: "Site officiel",
+    generatedLabel: "Généré le", reportIdLabel: "Report ID", versionLabel: "Version",
+    top4Btn: "🔥 Voir les 4 meilleurs pronostics",
+    top4Title: "🔥 Top 4 pronostics recommandés (parmi tes analyses enregistrées)",
+    top4Empty: "Aucune analyse disponible. Calcule et enregistre au moins un pronostic pour voir apparaître des recommandations ici.",
+    top4Rank: n => `N°${n}`,
+    top4RiskVeryLow: "Très faible", top4RiskLow: "Faible", top4RiskMedium: "Moyen", top4RiskHigh: "Élevé",
+    top4Explain: (conf,pct) => `Indice de confiance ${conf}/100, marché retenu à ${pct}% selon le modèle statistique.`,
+    saveBtn: "Enregistrer ce pronostic",
+    saveBtnDone: "✓ Pronostic enregistré",
+    historyTitle: "Historique des pronostics",
+    exportBtn: "Exporter (.csv)",
+    historyNote: "Cet historique n'est conservé que pendant cette session — exporte-le si tu veux le garder.",
+    accuracyStats: (n,c,pct) => n===0 ? "Aucun résultat enregistré pour l'instant" : `${c}/${n} pronostics corrects · taux de réussite : ${pct}%`,
+    setResult: "Résultat réel :",
+    outcomeH: "Dom.", outcomeD: "Nul", outcomeA: "Ext.",
+    correctTag: "✓ Correct", wrongTag: "✗ Incorrect",
+    marketsTitle: "Marchés — temps réglementaire",
+    m1x: "Double chance 1X", m12: "Double chance 12", mx2: "Double chance X2",
+    mBttsYes: "Les 2 marquent — Oui", mBttsNo: "Les 2 marquent — Non",
+    mOdd: "Total buts — Impair", mEven: "Total buts — Pair",
+    over: n => `Plus de ${n} buts`, under: n => `Moins de ${n} buts`,
+    handicapHome: name => `${name} -1 (victoire par 2+)`,
+    handicapAway: name => `${name} -1 (victoire par 2+)`,
+    comboHW_bttsY: "1 + BTTS Oui", comboHW_bttsN: "1 + BTTS Non",
+    comboD_bttsY: "X + BTTS Oui", comboD_bttsN: "X + BTTS Non",
+    comboAW_bttsY: "2 + BTTS Oui", comboAW_bttsN: "2 + BTTS Non",
+    total3Under: "Total 3 issues — 0-1 but", total3Mid: "Total 3 issues — 2-3 buts", total3Over: "Total 3 issues — 4+ buts",
+    homeOver15: name => `${name} — plus de 1,5 but`,
+    awayOver15: name => `${name} — plus de 1,5 but`,
+    homeCS: name => `${name} garde sa cage inviolée`,
+    awayCS: name => `${name} garde sa cage inviolée`,
+    homeNameDefault:"Équipe A", awayNameDefault:"Équipe B",
+    riskLow:"Pronostic peu risqué", riskMid:"Risque modéré", riskHigh:"Match risqué / imprévisible",
+    riskLowDetail:p=>`Issue nettement favorite (${p}%)`,
+    riskMidDetail:p=>`Favori sans écart écrasant (${p}%)`,
+    riskHighDetail:m=>`Issues très serrées (écart de ${m} pts)`
+  },
+  en: {
+    eyebrow: "SPORTS ANALYTICS",
+    tagline: "AI-powered football statistical analysis",
+    meta: "Expected goals<br>from recent form &amp; history",
+    free: "Free tool, for informational purposes only",
+    age: "18+ · Please gamble responsibly",
+    guideTitle: "How to use it",
+    guideList: [
+      "Enter the names of both teams.",
+      "Enter the average goals scored and conceded over each team's last 5 matches.",
+      "Click the form buttons (W / D / L) to reflect the last 5 results, oldest to most recent.",
+      "Leave the league average as is, unless you have a more precise figure for this competition.",
+      "Click \"Calculate prediction\" to get expected goals, probabilities, and the risk level."
+    ],
+    homeLabel: "Home", awayLabel: "Away",
+    scored: "Goals scored / match (last 5)",
+    conceded: "Goals conceded / match (last 5)",
+    xgScored: "xG for / match (last 5)",
+    xgConceded: "xG against / match (last 5)",
+    xgToggle: "Use xG (expected goals) instead of actual goals scored, if you have it",
+    avgSummary: "Calculate the average from recent matches",
+    avgFill: "Auto-fill",
+    avgMatchLabel: n => `M${n}`,
+    avgScoredPh: "goals scored", avgConcededPh: "goals conceded",
+    downloadImg: "📥 Download as image",
+    downloadImgSmall: "📥 Image",
+    h2hTitle: "Head-to-head (H2H) — optional",
+    h2hDesc: "In recent head-to-head meetings, who dominates?",
+    h2hNeutral: "Balanced / no clear trend",
+    h2hHome: "Home dominates the history",
+    h2hStrongHome: "Home dominates strongly",
+    h2hAway: "Away dominates the history",
+    h2hStrongAway: "Away dominates strongly",
+    confidenceLabel: "Confidence index",
+    top10Title: "Top 10 most likely exact scores",
+    top2Title: "The 2 most likely exact scores",
+    rank1: "#1 — most likely", rank2: "#2 — second most likely",
+    confHigh: "High confidence", confMid: "Moderate confidence", confLow: "Low confidence",
+    form: "Form (oldest to most recent)",
+    homeAdv: "▲ home advantage applied",
+    league: "League average goals / team / match",
+    lgDefault: "Not sure / other — default value",
+    lgL1: "Ligue 1 (≈1.35)", lgPL: "Premier League (≈1.45)", lgLiga: "La Liga (≈1.35)",
+    lgSerieA: "Serie A (≈1.40)", lgBund: "Bundesliga (≈1.55)", lgUCL: "Champions League (≈1.40)",
+    compute: "Calculate prediction",
+    xgHome: "Home xG", xgAway: "Away xG",
+    legHomeWord: "Home win", legDrawWord: "Draw", legAwayWord: "Away win",
+    matrixTitle: "Probability by exact score",
+    likelyPrefix: "Most likely score:",
+    footerModel: "Model: attack/defense strength relative to the league average, adjusted for recent form (increasing weight over the last 5 matches), then a Poisson distribution over expected goals. Indicative tool only — does not account for injuries, absences, or match context.",
+    footerDisclaimer: "⚠ This prediction is a statistical estimate, not a certainty. No sporting result is guaranteed: if you bet, only stake what you can afford to lose. For adults only (18+). Please gamble responsibly.",
+    brand: 'MOVANO AI — 1xbet promo code: <b>Movano29</b>',
+    version: "Version 1.0 | Created July 30, 2026",
+    copyright: "© Copyright 2026 Movano. All Rights Reserved.",
+    contact: 'Having trouble with the tool? Support: <b>01 63 56 88 29</b>',
+    contactTitle: "Contact us",
+    contactSub: "A question? A technical issue? A suggestion to improve MOVANO AI SPORTS ANALYTICS?",
+    contactHours: "Support: Monday – Sunday, 8:00 AM – 10:00 PM (GMT+1)",
+    contactMission: "Our mission: provide advanced statistical analysis to help football fans make better-informed decisions — never guarantees of winning.",
+    officialSite: "Official site",
+    generatedLabel: "Generated on", reportIdLabel: "Report ID", versionLabel: "Version",
+    top4Btn: "🔥 See the top 4 predictions",
+    top4Title: "🔥 Top 4 recommended predictions (from your saved analyses)",
+    top4Empty: "No analysis available. Compute and save at least one prediction to see recommendations here.",
+    top4Rank: n => `#${n}`,
+    top4RiskVeryLow: "Very low", top4RiskLow: "Low", top4RiskMedium: "Medium", top4RiskHigh: "High",
+    top4Explain: (conf,pct) => `Confidence index ${conf}/100, market chosen at ${pct}% by the statistical model.`,
+    saveBtn: "Save this prediction",
+    saveBtnDone: "✓ Prediction saved",
+    historyTitle: "Prediction history",
+    exportBtn: "Export (.csv)",
+    historyNote: "This history is only kept for this session — export it if you want to keep it.",
+    accuracyStats: (n,c,pct) => n===0 ? "No results recorded yet" : `${c}/${n} correct predictions · accuracy: ${pct}%`,
+    setResult: "Actual result:",
+    outcomeH: "Home", outcomeD: "Draw", outcomeA: "Away",
+    correctTag: "✓ Correct", wrongTag: "✗ Wrong",
+    marketsTitle: "Markets — regulation time",
+    m1x: "Double chance 1X", m12: "Double chance 12", mx2: "Double chance X2",
+    mBttsYes: "Both teams to score — Yes", mBttsNo: "Both teams to score — No",
+    mOdd: "Total goals — Odd", mEven: "Total goals — Even",
+    over: n => `Over ${n} goals`, under: n => `Under ${n} goals`,
+    handicapHome: name => `${name} -1 (win by 2+)`,
+    handicapAway: name => `${name} -1 (win by 2+)`,
+    comboHW_bttsY: "1 + BTTS Yes", comboHW_bttsN: "1 + BTTS No",
+    comboD_bttsY: "X + BTTS Yes", comboD_bttsN: "X + BTTS No",
+    comboAW_bttsY: "2 + BTTS Yes", comboAW_bttsN: "2 + BTTS No",
+    total3Under: "3-way total — 0-1 goal", total3Mid: "3-way total — 2-3 goals", total3Over: "3-way total — 4+ goals",
+    homeOver15: name => `${name} — over 1.5 goals`,
+    awayOver15: name => `${name} — over 1.5 goals`,
+    homeCS: name => `${name} clean sheet`,
+    awayCS: name => `${name} clean sheet`,
+    homeNameDefault:"Team A", awayNameDefault:"Team B",
+    riskLow:"Low-risk prediction", riskMid:"Moderate risk", riskHigh:"Risky / unpredictable match",
+    riskLowDetail:p=>`Clear favorite (${p}%)`,
+    riskMidDetail:p=>`Favorite without a crushing margin (${p}%)`,
+    riskHighDetail:m=>`Very tight outcomes (${m}pt margin)`
+  }
+};
+let lang = 'fr';
+let predictions = [];
+let reportCounter = 1; // sequential per session — see note in chat about persistence
+function nextReportId(){
+  const now = new Date();
+  const ymd = now.getFullYear().toString()
+    + String(now.getMonth()+1).padStart(2,'0')
+    + String(now.getDate()).padStart(2,'0');
+  const id = `MSA-${ymd}-${String(reportCounter).padStart(6,'0')}`;
+  reportCounter++;
+  return id;
+}
+let saveBtnState = 'unsaved';
+let currentPrediction = null;
+const FORM_LABEL_BY_LANG = {fr:{W:'V',N:'N',L:'D'}, en:{W:'W',N:'D',L:'L'}};
+
+function applyLang(){
+  const t = TR[lang];
+  document.documentElement.lang = lang;
+  document.getElementById('txt-eyebrow').textContent = t.eyebrow;
+  document.getElementById('txt-tagline').textContent = t.tagline;
+  document.getElementById('txt-meta').innerHTML = t.meta;
+  document.getElementById('txt-free').textContent = t.free;
+  document.getElementById('txt-age').textContent = t.age;
+  document.getElementById('txt-guide-title').textContent = t.guideTitle;
+  const list = document.getElementById('txt-guide-list');
+  list.innerHTML = t.guideList.map(li=>`<li>${li}</li>`).join('');
+  document.getElementById('txt-home-label').textContent = t.homeLabel;
+  document.getElementById('txt-away-label').textContent = t.awayLabel;
+  const useXg = document.getElementById('xgToggle').checked;
+  document.getElementById('txt-scored-1').textContent = useXg ? t.xgScored : t.scored;
+  document.getElementById('txt-scored-2').textContent = useXg ? t.xgScored : t.scored;
+  document.getElementById('txt-conceded-1').textContent = useXg ? t.xgConceded : t.conceded;
+  document.getElementById('txt-conceded-2').textContent = useXg ? t.xgConceded : t.conceded;
+  document.getElementById('txt-xg-toggle').textContent = t.xgToggle;
+  document.getElementById('txt-avg-summary-1').textContent = t.avgSummary;
+  document.getElementById('txt-avg-summary-2').textContent = t.avgSummary;
+  document.getElementById('txt-avg-fill-1').textContent = t.avgFill;
+  document.getElementById('txt-avg-fill-2').textContent = t.avgFill;
+  document.getElementById('txt-h2h-title').textContent = t.h2hTitle;
+  document.getElementById('txt-h2h-desc').textContent = t.h2hDesc;
+  document.getElementById('h2h-opt-neutral').textContent = t.h2hNeutral;
+  document.getElementById('h2h-opt-home').textContent = t.h2hHome;
+  document.getElementById('h2h-opt-strong-home').textContent = t.h2hStrongHome;
+  document.getElementById('h2h-opt-away').textContent = t.h2hAway;
+  document.getElementById('h2h-opt-strong-away').textContent = t.h2hStrongAway;
+  document.getElementById('txt-confidence-label').textContent = t.confidenceLabel;
+  document.getElementById('txt-top10-title').textContent = t.top10Title;
+  document.getElementById('txt-top2-title').textContent = t.top2Title;
+  renderAvgRows('home', parseInt(document.getElementById('homeFormCount').value));
+  renderAvgRows('away', parseInt(document.getElementById('awayFormCount').value));
+  document.getElementById('txt-form-1').textContent = t.form;
+  document.getElementById('txt-form-2').textContent = t.form;
+  document.getElementById('txt-home-adv').textContent = t.homeAdv;
+  document.getElementById('txt-league').textContent = t.league;
+  document.getElementById('lg-opt-default').textContent = t.lgDefault;
+  document.getElementById('lg-opt-l1').textContent = t.lgL1;
+  document.getElementById('lg-opt-pl').textContent = t.lgPL;
+  document.getElementById('lg-opt-liga').textContent = t.lgLiga;
+  document.getElementById('lg-opt-seriea').textContent = t.lgSerieA;
+  document.getElementById('lg-opt-bund').textContent = t.lgBund;
+  document.getElementById('lg-opt-ucl').textContent = t.lgUCL;
+  document.getElementById('computeBtn').textContent = t.compute;
+  document.getElementById('txt-xg-home').textContent = t.xgHome;
+  document.getElementById('txt-xg-away').textContent = t.xgAway;
+  document.getElementById('txt-matrix-title').textContent = t.matrixTitle;
+  document.getElementById('txt-footer-model').textContent = t.footerModel;
+  document.getElementById('txt-footer-disclaimer').textContent = t.footerDisclaimer;
+  document.getElementById('txt-brand').innerHTML = t.brand;
+  document.getElementById('txt-version').textContent = t.version;
+  document.getElementById('txt-copyright').textContent = t.copyright;
+  document.getElementById('txt-contact').innerHTML = t.contact;
+  document.getElementById('txt-contact-title').textContent = t.contactTitle;
+  document.getElementById('txt-contact-sub').textContent = t.contactSub;
+  document.getElementById('txt-contact-hours').textContent = t.contactHours;
+  document.getElementById('txt-contact-mission').textContent = t.contactMission;
+  document.getElementById('txt-official-site').textContent = t.officialSite;
+  document.getElementById('txt-generated-label').textContent = t.generatedLabel;
+  document.getElementById('txt-reportid-label').textContent = t.reportIdLabel;
+  document.getElementById('txt-version-label').textContent = t.versionLabel;
+  document.getElementById('txt-top4-btn').textContent = t.top4Btn;
+  document.getElementById('txt-top4-title').textContent = t.top4Title;
+  renderTop4();
+  document.getElementById('txt-save-btn').textContent = saveBtnState==='saved' ? t.saveBtnDone : t.saveBtn;
+  document.getElementById('txt-download-img').textContent = t.downloadImg;
+  document.getElementById('txt-history-title').textContent = t.historyTitle;
+  document.getElementById('txt-export-btn').textContent = t.exportBtn;
+  document.getElementById('txt-history-note').textContent = t.historyNote;
+  document.getElementById('txt-markets-title').textContent = t.marketsTitle;
+  renderHistory();
+
+  const hn = document.getElementById('homeName'), an = document.getElementById('awayName');
+  if(hn.value === TR.fr.homeNameDefault || hn.value === TR.en.homeNameDefault) hn.value = t.homeNameDefault;
+  if(an.value === TR.fr.awayNameDefault || an.value === TR.en.awayNameDefault) an.value = t.awayNameDefault;
+
+  ['homeForm','awayForm'].forEach(id=>{
+    document.getElementById(id).querySelectorAll('button').forEach(btn=>{
+      btn.textContent = FORM_LABEL_BY_LANG[lang][btn.dataset.state];
+    });
+  });
+
+  if(document.getElementById('results').classList.contains('show')){
+    document.getElementById('computeBtn').click();
+  }
+}
+document.getElementById('langFr').addEventListener('click', ()=>{
+  lang='fr';
+  document.getElementById('langFr').classList.add('lang-active');
+  document.getElementById('langEn').classList.remove('lang-active');
+  applyLang();
+});
+document.getElementById('langEn').addEventListener('click', ()=>{
+  lang='en';
+  document.getElementById('langEn').classList.add('lang-active');
+  document.getElementById('langFr').classList.remove('lang-active');
+  applyLang();
+});
+document.getElementById('xgToggle').addEventListener('change', applyLang);
+
+const FORM_CYCLE = {W:'N', N:'L', L:'W'};
+
+function setupFormRow(id){
+  const row = document.getElementById(id);
+  row.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const next = FORM_CYCLE[btn.dataset.state];
+      btn.dataset.state = next;
+      btn.textContent = FORM_LABEL_BY_LANG[lang][next];
+    });
+  });
+}
+setupFormRow('homeForm');
+setupFormRow('awayForm');
+
+function rebuildFormRow(id, count){
+  const row = document.getElementById(id);
+  const existing = Array.from(row.querySelectorAll('button')).map(b=>b.dataset.state);
+  let states;
+  if(count <= existing.length){
+    states = existing.slice(existing.length - count); // keep the most recent ones
+  } else {
+    states = Array(count - existing.length).fill('W').concat(existing); // pad older slots
+  }
+  row.innerHTML = states.map((s,i)=>
+    `<button data-state="${s}" data-i="${i}">${FORM_LABEL_BY_LANG[lang][s]}</button>`
+  ).join('');
+  setupFormRow(id);
+}
+document.getElementById('leaguePreset').addEventListener('change', e=>{
+  document.getElementById('leagueAvg').value = e.target.value;
+});
+
+document.getElementById('homeFormCount').addEventListener('change', e=>{
+  rebuildFormRow('homeForm', parseInt(e.target.value));
+  renderAvgRows('home', parseInt(e.target.value));
+});
+document.getElementById('awayFormCount').addEventListener('change', e=>{
+  rebuildFormRow('awayForm', parseInt(e.target.value));
+  renderAvgRows('away', parseInt(e.target.value));
+});
+
+function renderAvgRows(side, count){
+  const t = TR[lang];
+  const wrap = document.getElementById(side+'AvgRows');
+  const rows = [];
+  for(let i=1; i<=count; i++){
+    rows.push(`
+      <div class="avg-row">
+        <span>${t.avgMatchLabel(i)}</span>
+        <input type="number" step="1" min="0" class="avg-scored" placeholder="${t.avgScoredPh}">
+        <input type="number" step="1" min="0" class="avg-conceded" placeholder="${t.avgConcededPh}">
+      </div>
+    `);
+  }
+  wrap.innerHTML = rows.join('');
+}
+renderAvgRows('home', 5);
+renderAvgRows('away', 5);
+
+function fillAverage(side){
+  const wrap = document.getElementById(side+'AvgRows');
+  const scoredInputs = wrap.querySelectorAll('.avg-scored');
+  const concededInputs = wrap.querySelectorAll('.avg-conceded');
+  let sumS=0, sumC=0, n=scoredInputs.length;
+  scoredInputs.forEach(i=> sumS += parseFloat(i.value)||0);
+  concededInputs.forEach(i=> sumC += parseFloat(i.value)||0);
+  const avgS = n ? Math.round((sumS/n)*10)/10 : 0;
+  const avgC = n ? Math.round((sumC/n)*10)/10 : 0;
+  document.getElementById(side+'Scored').value = avgS;
+  document.getElementById(side+'Conceded').value = avgC;
+}
+document.getElementById('homeAvgFill').addEventListener('click', ()=>fillAverage('home'));
+document.getElementById('awayAvgFill').addEventListener('click', ()=>fillAverage('away'));
+
+function formFactor(rowId){
+  // weights increase for more recent matches; W=+1, N=0, L=-1
+  const row = document.getElementById(rowId);
+  const buttons = row.querySelectorAll('button');
+  const n = buttons.length;
+  const value = {W:1, N:0, L:-1};
+  let sum = 0, wsum = 0;
+  buttons.forEach((btn,i)=>{
+    const weight = n>1 ? 0.6 + (1.2-0.6) * (i/(n-1)) : 1;
+    sum += value[btn.dataset.state] * weight;
+    wsum += weight;
+  });
+  // returns a small multiplier around 1.0, e.g. 0.85 to 1.15
+  return 1 + (sum / wsum) * 0.12;
+}
+
+function poissonProb(lambda, k){
+  return Math.pow(lambda, k) * Math.exp(-lambda) / factorial(k);
+}
+function factorial(n){
+  let f = 1;
+  for(let i=2;i<=n;i++) f*=i;
+  return f;
+}
+
+// Dixon-Coles correction: independent Poisson underrates the correlation between
+// low scorelines (0-0, 1-0, 0-1, 1-1). rho is a small negative constant (~ -0.05 to -0.13
+// in published fits) that nudges those four cells, then the grid is renormalized to sum to 1.
+function dixonColesAdjust(matrix, lambda, mu, rho){
+  function tau(x,y){
+    if(x===0 && y===0) return 1 - lambda*mu*rho;
+    if(x===0 && y===1) return 1 + lambda*rho;
+    if(x===1 && y===0) return 1 + mu*rho;
+    if(x===1 && y===1) return 1 - rho;
+    return 1;
+  }
+  let sum = 0;
+  const adjusted = matrix.map((row,h)=> row.map((p,a)=>{
+    const v = Math.max(0, p * tau(h,a));
+    sum += v;
+    return v;
+  }));
+  return adjusted.map(row => row.map(v => v/sum));
+}
+
+function heatColor(p, maxP){
+  // interpolate between paper-2 (low) and amber (high)
+  const t = Math.min(p / maxP, 1);
+  const c1 = [241,234,218]; // paper-2
+  const c2 = [217,142,43]; // amber
+  const r = Math.round(c1[0] + (c2[0]-c1[0])*t);
+  const g = Math.round(c1[1] + (c2[1]-c1[1])*t);
+  const b = Math.round(c1[2] + (c2[2]-c1[2])*t);
+  return `rgb(${r},${g},${b})`;
+}
+
+document.getElementById('computeBtn').addEventListener('click', ()=>{
+  const t = TR[lang];
+  const homeName = document.getElementById('homeName').value || t.homeNameDefault;
+  const awayName = document.getElementById('awayName').value || t.awayNameDefault;
+  const hs = parseFloat(document.getElementById('homeScored').value) || 0;
+  const hc = parseFloat(document.getElementById('homeConceded').value) || 0;
+  const as_ = parseFloat(document.getElementById('awayScored').value) || 0;
+  const ac = parseFloat(document.getElementById('awayConceded').value) || 0;
+  const leagueAvg = parseFloat(document.getElementById('leagueAvg').value) || 1.35;
+
+  const homeAdv = 1.12; // fixed home advantage multiplier
+
+  const homeAttack = hs / leagueAvg;
+  const homeDefense = hc / leagueAvg;
+  const awayAttack = as_ / leagueAvg;
+  const awayDefense = ac / leagueAvg;
+
+  const homeFormMult = formFactor('homeForm');
+  const awayFormMult = formFactor('awayForm');
+
+  let xgHome = homeAttack * awayDefense * leagueAvg * homeAdv * homeFormMult;
+  let xgAway = awayAttack * homeDefense * leagueAvg * awayFormMult;
+
+  // Optional H2H (head-to-head) bias: small nudge, capped so it can't dominate the model
+  const h2hBias = parseInt(document.getElementById('h2hBias').value) || 0;
+  const h2hStep = 0.06; // max ±12% swing at the strongest setting
+  xgHome *= (1 + h2hBias*h2hStep);
+  xgAway *= (1 - h2hBias*h2hStep);
+
+  xgHome = Math.max(0.15, xgHome);
+  xgAway = Math.max(0.15, xgAway);
+
+  document.getElementById('xgHome').textContent = xgHome.toFixed(2);
+  document.getElementById('xgAway').textContent = xgAway.toFixed(2);
+
+  const MAXG = 6;
+  let matrix = [];
+  for(let h=0; h<MAXG; h++){
+    let row = [];
+    for(let a=0; a<MAXG; a++){
+      row.push(poissonProb(xgHome,h) * poissonProb(xgAway,a));
+    }
+    matrix.push(row);
+  }
+  matrix = dixonColesAdjust(matrix, xgHome, xgAway, -0.08);
+
+  let pHome=0, pDraw=0, pAway=0;
+  let maxCell = {p:-1,h:0,a:0};
+  for(let h=0; h<MAXG; h++){
+    for(let a=0; a<MAXG; a++){
+      const p = matrix[h][a];
+      if(h>a) pHome+=p; else if(h===a) pDraw+=p; else pAway+=p;
+      if(p > maxCell.p) maxCell = {p, h, a};
+    }
+  }
+  const total = pHome+pDraw+pAway;
+  pHome = pHome/total*100; pDraw = pDraw/total*100; pAway = pAway/total*100;
+
+  document.getElementById('segHome').style.width = pHome+'%';
+  document.getElementById('segDraw').style.width = pDraw+'%';
+  document.getElementById('segAway').style.width = pAway+'%';
+  document.getElementById('segHome').textContent = pHome>=10 ? pHome.toFixed(0)+'%' : '';
+  document.getElementById('segDraw').textContent = pDraw>=10 ? pDraw.toFixed(0)+'%' : '';
+  document.getElementById('segAway').textContent = pAway>=10 ? pAway.toFixed(0)+'%' : '';
+  document.getElementById('legHome').textContent = homeName+' — '+pHome.toFixed(1)+'%';
+  document.getElementById('legDraw').textContent = t.legDrawWord+' — '+pDraw.toFixed(1)+'%';
+  document.getElementById('legAway').textContent = awayName+' — '+pAway.toFixed(1)+'%';
+
+  // Risk level: how clear-cut the outcome is (top probability vs the runner-up)
+  const outcomes = [pHome, pDraw, pAway].sort((a,b)=>b-a);
+  const top = outcomes[0], second = outcomes[1];
+  const margin = top - second;
+  const badge = document.getElementById('riskBadge');
+  const label = document.getElementById('riskLabel');
+  const detail = document.getElementById('riskDetail');
+  badge.classList.remove('low','mid','high');
+  let riskClass;
+  if(top >= 55 && margin >= 20){
+    riskClass = 'low';
+    badge.classList.add('low');
+    label.textContent = t.riskLow;
+    detail.textContent = t.riskLowDetail(top.toFixed(0));
+  } else if(top >= 42 && margin >= 8){
+    riskClass = 'mid';
+    badge.classList.add('mid');
+    label.textContent = t.riskMid;
+    detail.textContent = t.riskMidDetail(top.toFixed(0));
+  } else {
+    riskClass = 'high';
+    badge.classList.add('high');
+    label.textContent = t.riskHigh;
+    detail.textContent = t.riskHighDetail(margin.toFixed(0));
+  }
+
+  const maxP = Math.max(...matrix.flat());
+  const table = document.getElementById('matrixTable');
+
+  // Derived markets from the same scoreline matrix
+  let pBttsYes=0, pOdd=0, pEven=0;
+  let pHomeMinus1=0, pAwayMinus1=0; // win by 2+ goals
+  let pHW_bttsY=0,pHW_bttsN=0,pD_bttsY=0,pD_bttsN=0,pAW_bttsY=0,pAW_bttsN=0;
+  let pUnder15=0, pMid23=0, pOver35=0; // total 3 issues
+  let pHomeOver15=0, pAwayOver15=0; // individual totals
+  let pHomeCS=0, pAwayCS=0; // clean sheets
+  const overUnder = {};
+  [0.5,1.5,2.5,3.5,4.5].forEach(l=>overUnder[l]={over:0,under:0});
+  for(let h=0; h<MAXG; h++){
+    for(let a=0; a<MAXG; a++){
+      const p = matrix[h][a];
+      const total = h+a;
+      const btts = h>0 && a>0;
+      if(btts) pBttsYes += p;
+      if(total%2===0) pEven += p; else pOdd += p;
+      [0.5,1.5,2.5,3.5,4.5].forEach(l=>{
+        if(total > l) overUnder[l].over += p; else overUnder[l].under += p;
+      });
+      if(h-a >= 2) pHomeMinus1 += p;
+      if(a-h >= 2) pAwayMinus1 += p;
+      if(h>a){ if(btts) pHW_bttsY+=p; else pHW_bttsN+=p; }
+      else if(h===a){ if(btts) pD_bttsY+=p; else pD_bttsN+=p; }
+      else { if(btts) pAW_bttsY+=p; else pAW_bttsN+=p; }
+      if(total<=1) pUnder15+=p; else if(total<=3) pMid23+=p; else pOver35+=p;
+      if(h>1) pHomeOver15+=p;
+      if(a>1) pAwayOver15+=p;
+      if(a===0) pHomeCS+=p;
+      if(h===0) pAwayCS+=p;
+    }
+  }
+  const p1X = pHome+pDraw, p12 = pHome+pAway, pX2 = pDraw+pAway;
+  const t2 = TR[lang];
+
+  // Pick the single most confident market among the classic "tip" categories —
+  // used only for the Top-4 recommendation summary, from data already computed here.
+  const candidateMarkets = [
+    [`${t2.legHomeWord}`, pHome], [`${t2.legDrawWord}`, pDraw], [`${t2.legAwayWord}`, pAway],
+    [t2.m1x, p1X], [t2.m12, p12], [t2.mx2, pX2],
+    [t2.mBttsYes, pBttsYes*100], [t2.mBttsNo, (1-pBttsYes)*100],
+    [t2.over(2.5), overUnder[2.5].over*100], [t2.under(2.5), overUnder[2.5].under*100],
+  ];
+  const bestMarket = candidateMarkets.reduce((a,b)=> b[1]>a[1] ? b : a);
+
+  const marketCells = [
+    [t2.m1x, p1X], [t2.m12, p12], [t2.mx2, pX2],
+    [t2.mBttsYes, pBttsYes*100], [t2.mBttsNo, (1-pBttsYes)*100],
+    [t2.mOdd, pOdd*100], [t2.mEven, pEven*100],
+    [t2.over(2.5), overUnder[2.5].over*100], [t2.under(2.5), overUnder[2.5].under*100],
+    [t2.over(1.5), overUnder[1.5].over*100], [t2.under(3.5), overUnder[3.5].under*100],
+    [t2.handicapHome(homeName), pHomeMinus1*100], [t2.handicapAway(awayName), pAwayMinus1*100],
+    [t2.comboHW_bttsY, pHW_bttsY*100], [t2.comboHW_bttsN, pHW_bttsN*100],
+    [t2.comboD_bttsY, pD_bttsY*100], [t2.comboD_bttsN, pD_bttsN*100],
+    [t2.comboAW_bttsY, pAW_bttsY*100], [t2.comboAW_bttsN, pAW_bttsN*100],
+    [t2.total3Under, pUnder15*100], [t2.total3Mid, pMid23*100], [t2.total3Over, pOver35*100],
+    [t2.homeOver15(homeName), pHomeOver15*100], [t2.awayOver15(awayName), pAwayOver15*100],
+    [t2.homeCS(homeName), pHomeCS*100], [t2.awayCS(awayName), pAwayCS*100],
+  ];
+  document.getElementById('marketsGrid').innerHTML = marketCells.map(([lbl,val])=>`
+    <div class="market-cell">
+      <div class="mc-label">${lbl}</div>
+      <div class="mc-value">${val.toFixed(1)}%</div>
+    </div>
+  `).join('');
+
+  table.innerHTML = '';
+  const headRow = document.createElement('tr');
+  headRow.appendChild(document.createElement('th'));
+  for(let a=0;a<MAXG;a++){
+    const th = document.createElement('th'); th.textContent = a; headRow.appendChild(th);
+  }
+  table.appendChild(headRow);
+  for(let h=0; h<MAXG; h++){
+    const tr = document.createElement('tr');
+    const th = document.createElement('th'); th.textContent = h; tr.appendChild(th);
+    for(let a=0; a<MAXG; a++){
+      const td = document.createElement('td');
+      const p = matrix[h][a];
+      td.style.background = heatColor(p, maxP);
+      td.textContent = (p*100).toFixed(1);
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  }
+
+  // Top 10 most probable exact scores, ranked
+  const allScores = [];
+  for(let h=0; h<MAXG; h++) for(let a=0; a<MAXG; a++) allScores.push({h,a,p:matrix[h][a]});
+  allScores.sort((x,y)=>y.p-x.p);
+  const top10 = allScores.slice(0,10);
+  const top10Max = top10[0].p;
+  document.getElementById('top10List').innerHTML = top10.map(s => `
+    <li class="top10-row">
+      <span class="rank"></span>
+      <span class="sc">${s.h}-${s.a}</span>
+      <span class="bar-wrap"><span class="bar" style="width:${(s.p/top10Max*100).toFixed(0)}%"></span></span>
+      <span class="pct">${(s.p*100).toFixed(1)}%</span>
+    </li>
+  `).join('');
+
+  // Top 2 highlighted cards — each with its own confidence label based on how
+  // strong that specific score's probability is (a scoreline at 24% carries more
+  // signal than one at 9%, even within the same match).
+  function scoreConfidence(pct){
+    if(pct >= 18) return {cls:'high', label:t.confHigh};
+    if(pct >= 10) return {cls:'mid', label:t.confMid};
+    return {cls:'low', label:t.confLow};
+  }
+  const top2 = top10.slice(0,2);
+  const top2Labels = [t.rank1, t.rank2];
+  document.getElementById('top2Grid').innerHTML = top2.map((s,i)=>{
+    const pct = s.p*100;
+    const conf = scoreConfidence(pct);
+    return `
+      <div class="top2-card">
+        <div class="t2-rank">${top2Labels[i]}</div>
+        <div class="t2-score">${s.h}-${s.a}</div>
+        <div class="t2-pct">${pct.toFixed(1)}%</div>
+        <div class="t2-conf ${conf.cls}">${conf.label}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Confidence index (/100): starts high, docked for thinner input data —
+  // NOT a measure of how predictable the match is (that's the risk badge), but of
+  // how much real signal fed the model.
+  let confidence = 96;
+  if(!document.getElementById('xgToggle').checked) confidence -= 12; // raw goals are noisier than xG
+  const homeN = parseInt(document.getElementById('homeFormCount').value);
+  const awayN = parseInt(document.getElementById('awayFormCount').value);
+  confidence -= (5-homeN)*4 + (5-awayN)*4; // fewer recent matches = less signal
+  if(h2hBias === 0) confidence -= 6; // no head-to-head input given
+  confidence = Math.max(35, Math.min(98, Math.round(confidence)));
+  const confBadge = document.getElementById('confidenceBadge');
+  confBadge.classList.remove('low','mid','high');
+  confBadge.classList.add(confidence>=75?'high':confidence>=55?'mid':'low');
+  document.getElementById('confidenceValue').textContent = confidence;
+
+  // 4-tier risk level for the Top-4 recommendation cards (🟢🟡🟠🔴), derived
+  // from the same margin used for the 3-tier risk badge, just split finer.
+  const outcomesSorted = [pHome, pDraw, pAway].sort((a,b)=>b-a);
+  const topOutcome = outcomesSorted[0], marginOutcome = outcomesSorted[0]-outcomesSorted[1];
+  let riskLevel4;
+  if(topOutcome>=60 && marginOutcome>=25) riskLevel4 = {emoji:'🟢', key:'veryLow'};
+  else if(topOutcome>=48 && marginOutcome>=14) riskLevel4 = {emoji:'🟡', key:'low'};
+  else if(topOutcome>=38 && marginOutcome>=6) riskLevel4 = {emoji:'🟠', key:'medium'};
+  else riskLevel4 = {emoji:'🔴', key:'high'};
+
+  const outcomesNum = {H:pHome, D:pDraw, A:pAway};
+  const predicted = Object.keys(outcomesNum).reduce((a,b)=>outcomesNum[a]>=outcomesNum[b]?a:b);
+  currentPrediction = {
+    id: Date.now()+'-'+Math.random().toString(36).slice(2,7),
+    reportId: nextReportId(),
+    date: new Date().toLocaleString(lang==='fr'?'fr-FR':'en-GB'),
+    homeName, awayName,
+    xgHome: xgHome.toFixed(2), xgAway: xgAway.toFixed(2),
+    pHome: pHome.toFixed(1), pDraw: pDraw.toFixed(1), pAway: pAway.toFixed(1),
+    score: maxCell.h+'-'+maxCell.a,
+    top10: top10.slice(0,5).map(s=>`${s.h}-${s.a} (${(s.p*100).toFixed(1)}%)`),
+    confidence,
+    risk: label.textContent,
+    riskClass,
+    riskLevel4,
+    bestMarket: {label: bestMarket[0], pct: bestMarket[1]},
+    predicted, actual: null
+  };
+  document.getElementById('reportDate').textContent = currentPrediction.date;
+  document.getElementById('reportIdValue').textContent = currentPrediction.reportId;
+  saveBtnState = 'unsaved';
+  document.getElementById('saveBtn').classList.remove('saved');
+  document.getElementById('txt-save-btn').textContent = TR[lang].saveBtn;
+  document.getElementById('downloadImgBtn').disabled = true;
+
+  document.getElementById('results').classList.add('show');
+});
+
+document.getElementById('saveBtn').addEventListener('click', ()=>{
+  if(!currentPrediction) return;
+  predictions.unshift(currentPrediction);
+  saveBtnState = 'saved';
+  document.getElementById('saveBtn').classList.add('saved');
+  document.getElementById('txt-save-btn').textContent = TR[lang].saveBtnDone;
+  document.getElementById('downloadImgBtn').disabled = false;
+  renderHistory();
+  renderTop4();
+});
+
+document.getElementById('downloadImgBtn').addEventListener('click', ()=>{
+  if(!currentPrediction) return;
+  downloadReceipt(currentPrediction);
+});
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+function drawCard(ctx,x,y,w,h){
+  ctx.save();
+  ctx.shadowColor = 'rgba(20,40,30,0.10)';
+  ctx.shadowBlur = 18;
+  ctx.shadowOffsetY = 6;
+  ctx.fillStyle = '#FFFFFF';
+  roundRect(ctx,x,y,w,h,14);
+  ctx.fill();
+  ctx.restore();
+  ctx.strokeStyle = 'rgba(20,40,30,0.06)';
+  ctx.lineWidth = 1;
+  roundRect(ctx,x,y,w,h,14);
+  ctx.stroke();
+}
+
+async function downloadReceipt(p){
+  const t = TR[lang];
+  await Promise.all([
+    document.fonts.load('800 30px Inter'),
+    document.fonts.load('700 20px Inter'),
+    document.fonts.load('600 15px Inter'),
+    document.fonts.load('400 13px Inter'),
+  ]);
+
+  const W = 720, H = 900, M = 44;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  const GREEN = '#1F4D3A';
+  const GREEN_ACCENT = '#2E7D46';
+  const GRAY_BG = '#F1EFEA';
+  const OFFWHITE = '#FAF8F4';
+  const TEXT = '#1B2233';
+  const MUTED = '#767B85';
+  const riskColors = {
+    low: {bg:'#E6F2EA', fg:'#1F6B3E'},
+    mid: {bg:'#FBEEDA', fg:'#9C5D14'},
+    high:{bg:'#FBE7E5', fg:'#B23A34'}
+  };
+  const rc = riskColors[p.riskClass] || riskColors.mid;
+
+  // Background
+  ctx.fillStyle = OFFWHITE; ctx.fillRect(0,0,W,H);
+
+  // Header — logo mark + wordmark
+  const logoImg = await loadImage(LOGO_BADGE);
+  ctx.save();
+  roundRect(ctx, M, 36, 42, 42, 10);
+  ctx.clip();
+  ctx.fillStyle = '#0B1F3A'; ctx.fillRect(M,36,42,42);
+  const ir = Math.max(42/logoImg.width, 42/logoImg.height);
+  const iw = logoImg.width*ir, ih = logoImg.height*ir;
+  ctx.drawImage(logoImg, M+(42-iw)/2, 36+(42-ih)/2, iw, ih);
+  ctx.restore();
+
+  ctx.fillStyle = TEXT;
+  ctx.font = '800 22px Inter';
+  ctx.fillText('MOVANO AI', M+54, 60);
+  ctx.fillStyle = MUTED;
+  ctx.font = '500 11px Inter';
+  ctx.fillText('SPORTS ANALYTICS', M+54, 76);
+
+  // Timestamp with clock icon — generated at export time
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2,'0');
+  const mm = String(now.getMonth()+1).padStart(2,'0');
+  const yyyy = now.getFullYear();
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mi = String(now.getMinutes()).padStart(2,'0');
+  const ss = String(now.getSeconds()).padStart(2,'0');
+  ctx.fillStyle = MUTED;
+  ctx.font = '500 13px Inter';
+  ctx.fillText(`📅 ${t.generatedLabel} : ${dd}/${mm}/${yyyy} - ${hh}:${mi}:${ss}`, M, 106);
+  ctx.fillText(`🆔 ${t.reportIdLabel} : ${p.reportId || '–'}`, M, 126);
+  ctx.fillStyle = '#1F6B3E';
+  ctx.fillText(`🟢 ${t.versionLabel} : v2.0`, M, 146);
+
+  // Elegant separator
+  const grad = ctx.createLinearGradient(M,0,W-M,0);
+  grad.addColorStop(0, GREEN); grad.addColorStop(1, 'rgba(31,77,58,0.05)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(M, 160, W-2*M, 2);
+
+  let y = 188;
+
+  // Card 1 — Matchup + xG
+  drawCard(ctx, M, y, W-2*M, 150);
+  ctx.fillStyle = TEXT;
+  ctx.font = '700 22px Inter';
+  const half = (W-2*M)/2;
+  ctx.textAlign = 'left';
+  wrapText(ctx, p.homeName, M+28, y+42, half-56, 24);
+  ctx.textAlign = 'right';
+  wrapText(ctx, p.awayName, W-M-28, y+42, half-56, 24, true);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = MUTED;
+  ctx.font = '600 12px Inter';
+  ctx.fillText('VS', W/2, y+40);
+
+  ctx.textAlign = 'left';
+  ctx.fillStyle = MUTED;
+  ctx.font = '500 11px Inter';
+  ctx.fillText('xG ATTENDU', M+28, y+92);
+  ctx.fillStyle = GREEN_ACCENT;
+  ctx.font = '800 34px Inter';
+  ctx.fillText(p.xgHome, M+28, y+130);
+
+  ctx.textAlign = 'right';
+  ctx.fillStyle = MUTED;
+  ctx.font = '500 11px Inter';
+  ctx.fillText('xG ATTENDU', W-M-28, y+92);
+  ctx.fillStyle = GREEN_ACCENT;
+  ctx.font = '800 34px Inter';
+  ctx.fillText(p.xgAway, W-M-28, y+130);
+  ctx.textAlign = 'left';
+
+  y += 170;
+
+  // Card 2 — 1 X 2 probabilities
+  drawCard(ctx, M, y, W-2*M, 110);
+  const cardW = W-2*M, colW = cardW/3;
+  const probs = [['1', p.pHome, p.homeName], ['X', p.pDraw, ''], ['2', p.pAway, p.awayName]];
+  probs.forEach((pr,i)=>{
+    const cx = M + colW*i + colW/2;
+    ctx.textAlign='center';
+    ctx.fillStyle = MUTED;
+    ctx.font = '600 12px Inter';
+    ctx.fillText(pr[0] + (pr[2] ? ' · '+truncate(ctx,pr[2],colW-20) : ''), cx, y+32);
+    ctx.fillStyle = GREEN;
+    ctx.font = '800 30px Inter';
+    ctx.fillText(pr[1]+'%', cx, y+72);
+    if(i<2){ ctx.strokeStyle='rgba(20,40,30,0.08)'; ctx.beginPath();
+      ctx.moveTo(M+colW*(i+1),y+16); ctx.lineTo(M+colW*(i+1),y+94); ctx.stroke(); }
+  });
+  ctx.textAlign = 'left';
+
+  y += 130;
+
+  // Card 3 — top scores + risk badge + confidence
+  drawCard(ctx, M, y, W-2*M, 130);
+  ctx.fillStyle = MUTED;
+  ctx.font = '500 11px Inter';
+  ctx.fillText(t.top10Title.toUpperCase(), M+28, y+30);
+  ctx.fillStyle = TEXT;
+  ctx.font = '700 15px Inter';
+  const top3 = (p.top10 || []).slice(0,3);
+  top3.forEach((s,i)=> ctx.fillText(`${i+1}. ${s}`, M+28, y+58+i*22));
+
+  // Risk badge (pill)
+  ctx.font = '700 13px Inter';
+  const badgeText = p.risk;
+  const btw = ctx.measureText(badgeText).width;
+  const bw = btw + 36, bh = 32, bx = W-M-28-bw, by = y+30;
+  ctx.fillStyle = rc.bg;
+  roundRect(ctx, bx, by, bw, bh, bh/2); ctx.fill();
+  ctx.fillStyle = rc.fg;
+  ctx.textAlign='center';
+  ctx.fillText(badgeText, bx+bw/2, by+bh/2+5);
+  ctx.textAlign='left';
+
+  // Confidence index
+  ctx.font = '600 12px Inter';
+  ctx.fillStyle = MUTED;
+  ctx.textAlign='right';
+  ctx.fillText(`${t.confidenceLabel}: ${p.confidence!=null?p.confidence:'–'}/100`, W-M-28, by+bh+26);
+  ctx.textAlign='left';
+
+  if(p.actual){
+    ctx.font = '700 12px Inter';
+    ctx.fillStyle = p.actual===p.predicted ? riskColors.low.fg : riskColors.high.fg;
+    ctx.fillText(p.actual===p.predicted ? t.correctTag : t.wrongTag, M+28, y+124);
+  }
+
+  y += 160;
+
+  // Footer
+  ctx.strokeStyle = 'rgba(20,40,30,0.1)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(M,H-90); ctx.lineTo(W-M,H-90); ctx.stroke();
+
+  ctx.fillStyle = GREEN;
+  ctx.font = '700 13px Inter';
+  ctx.fillText('Movano AI', M, H-64);
+
+  ctx.fillStyle = MUTED;
+  ctx.font = '400 11px Inter';
+  wrapText(ctx, 'Analyse statistique — ce document est une estimation et ne garantit pas le résultat du match. Jouez de manière responsable. +18', M, H-46, W-2*M, 15);
+
+  const link = document.createElement('a');
+  link.download = `pronostic-${p.homeName}-${p.awayName}.png`.replace(/\s+/g,'_');
+  link.href = canvas.toDataURL('image/png');
+  document.body.appendChild(link); link.click(); document.body.removeChild(link);
+}
+
+function truncate(ctx, text, maxWidth){
+  if(ctx.measureText(text).width <= maxWidth) return text;
+  let t = text;
+  while(ctx.measureText(t+'…').width > maxWidth && t.length>1){ t = t.slice(0,-1); }
+  return t+'…';
+}
+function wrapText(ctx, text, x, y, maxWidth, lineHeight, rightAlign){
+  const words = text.split(' ');
+  let line = '', lines=[];
+  for(const w of words){
+    const test = line ? line+' '+w : w;
+    if(ctx.measureText(test).width > maxWidth && line){ lines.push(line); line = w; }
+    else line = test;
+  }
+  lines.push(line);
+  lines.slice(0,2).forEach((l,i)=> ctx.fillText(l, x, y + i*lineHeight));
+}
+
+function renderTop4(){
+  const t = TR[lang];
+  const list = document.getElementById('top4List');
+  const RISK_LABELS = {veryLow:t.top4RiskVeryLow, low:t.top4RiskLow, medium:t.top4RiskMedium, high:t.top4RiskHigh};
+
+  if(predictions.length === 0){
+    list.innerHTML = `<div class="top4-empty">${t.top4Empty}</div>`;
+    return;
+  }
+  // Only ever ranks matches the user has actually analyzed and saved this
+  // session — never fabricated matches or numbers.
+  const ranked = [...predictions].sort((a,b)=> (b.confidence||0) - (a.confidence||0)).slice(0,4);
+  list.innerHTML = ranked.map((p,i)=>{
+    const rl = p.riskLevel4 || {emoji:'🟠', key:'medium'};
+    return `
+      <div class="top4-card">
+        <div class="top4-rank">${t.top4Rank(i+1)}</div>
+        <div class="top4-match">${p.homeName} vs ${p.awayName}</div>
+        <div class="top4-row">
+          <span class="top4-market">${p.bestMarket ? p.bestMarket.label : '–'}</span>
+          <span class="top4-pct">${p.bestMarket ? p.bestMarket.pct.toFixed(1) : '–'}%</span>
+        </div>
+        <div class="top4-row">
+          <span class="top4-risk">${rl.emoji} ${RISK_LABELS[rl.key]}</span>
+        </div>
+        <div class="top4-explain">${t.top4Explain(p.confidence, p.bestMarket ? p.bestMarket.pct.toFixed(1) : '–')}</div>
+      </div>
+    `;
+  }).join('');
+}
+document.getElementById('top4Btn').addEventListener('click', ()=>{
+  const sec = document.getElementById('top4Section');
+  const show = sec.style.display === 'none';
+  sec.style.display = show ? 'block' : 'none';
+  if(show) renderTop4();
+});
+
+function renderHistory(){
+  const t = TR[lang];
+  const section = document.getElementById('historySection');
+  const list = document.getElementById('historyList');
+  if(predictions.length === 0){ section.style.display = 'none'; return; }
+  section.style.display = 'block';
+
+  const withResult = predictions.filter(p => p.actual);
+  const correct = withResult.filter(p => p.actual === p.predicted).length;
+  const pct = withResult.length ? Math.round(correct/withResult.length*100) : 0;
+  document.getElementById('accuracyStat').textContent = t.accuracyStats(withResult.length, correct, pct);
+
+  list.innerHTML = predictions.map(p => `
+    <div class="history-entry">
+      <div>
+        <div class="he-teams">${p.homeName} vs ${p.awayName}</div>
+        <div>xG ${p.xgHome} – ${p.xgAway} · ${p.pHome}% / ${p.pDraw}% / ${p.pAway}% · ${p.risk}</div>
+        ${p.actual ? `
+          <span class="he-tag ${p.actual===p.predicted?'correct':'wrong'}">${p.actual===p.predicted?t.correctTag:t.wrongTag}</span>
+        ` : `
+          <div class="he-result">
+            <span class="rlabel">${t.setResult}</span>
+            <button data-id="${p.id}" data-r="H">${t.outcomeH}</button>
+            <button data-id="${p.id}" data-r="D">${t.outcomeD}</button>
+            <button data-id="${p.id}" data-r="A">${t.outcomeA}</button>
+          </div>
+        `}
+        <br><button class="he-download" data-download="${p.id}">${t.downloadImgSmall}</button>
+      </div>
+      <div class="he-meta">${p.date}<br>${t.likelyPrefix} ${p.score}</div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('historyList').addEventListener('click', (e)=>{
+  const dlBtn = e.target.closest('button[data-download]');
+  if(dlBtn){
+    const pred = predictions.find(p => p.id === dlBtn.dataset.download);
+    if(pred) downloadReceipt(pred);
+    return;
+  }
+  const btn = e.target.closest('button[data-r]');
+  if(!btn) return;
+  const pred = predictions.find(p => p.id === btn.dataset.id);
+  if(pred){ pred.actual = btn.dataset.r; renderHistory(); }
+});
+
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  if(predictions.length === 0) return;
+  const header = 'Report ID,Date,Home,Away,xG Home,xG Away,Home %,Draw %,Away %,Score,Risk,Predicted,Actual,Correct\n';
+  const rows = predictions.map(p =>
+    [p.reportId||'', p.date, p.homeName, p.awayName, p.xgHome, p.xgAway, p.pHome, p.pDraw, p.pAway, p.score, p.risk,
+     p.predicted, p.actual||'', p.actual ? (p.actual===p.predicted?'Yes':'No') : '']
+      .map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')
+  ).join('\n');
+  const blob = new Blob([header + rows], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'pronostics-movano.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+applyLang();
+document.getElementById('computeBtn').click();
+
+setTimeout(()=>{
+  const splash = document.getElementById('splashScreen');
+  splash.classList.add('fade-out');
+  setTimeout(()=> splash.remove(), 650);
+}, 2400);
+
+// Stadium-inspired animated background — a stylized top-down pitch, slow
+// pulsing "floodlight" halos, drifting data-node network, and a few floating
+// analytics labels that fade in and out. Purely decorative: pointer-events:none,
+// sits behind the content (z-index:0), and stays visible only in page margins
+// since cards are opaque on top of it. Kept to canvas 2D (no WebGL/3D/particles-
+// heavy physics) so it stays light and doesn't slow down the page.
+(function(){
+  const canvas = document.getElementById('bgNetwork');
+  const ctx = canvas.getContext('2d');
+  let W, H, nodes = [], labels = [];
+  const COLORS = ['rgba(37,99,235,0.5)', 'rgba(6,182,212,0.5)', 'rgba(217,142,43,0.4)'];
+  const LABEL_TEXTS = ['xG', 'Possession', 'Forme', 'Probabilité', 'Analyse IA', 'xG', 'BTTS'];
+
+  function resize(){
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    const count = Math.min(70, Math.max(24, Math.round((W*H)/28000)));
+    nodes = Array.from({length: count}, ()=> ({
+      x: Math.random()*W, y: Math.random()*H,
+      vx: (Math.random()-0.5)*0.15, vy: (Math.random()-0.5)*0.15,
+      r: Math.random()*1.6+0.6,
+      c: COLORS[Math.floor(Math.random()*COLORS.length)],
+      phase: Math.random()*Math.PI*2
+    }));
+    const labelCount = Math.min(6, Math.max(3, Math.round(W/300)));
+    labels = Array.from({length: labelCount}, ()=> ({
+      text: LABEL_TEXTS[Math.floor(Math.random()*LABEL_TEXTS.length)],
+      x: Math.random()*W, y: Math.random()*H,
+      phase: Math.random()*Math.PI*2,
+      speed: 0.15 + Math.random()*0.15
+    }));
+
+    // "Players": glowing dots placed in a loose formation on the pitch, each
+    // drifting slowly around a home spot within its own zone. Roles are
+    // generic (GK/DEF/MIL/ATT) — never fabricated names or stats.
+    const margin = Math.min(W,H)*0.06;
+    const pw = W - margin*2, ph = H - margin*2;
+    const FORMATIONS = {
+      '4-3-3': [
+        {rx:0.06, ry:0.5, role:'GK'},
+        {rx:0.18, ry:0.15, role:'DEF'}, {rx:0.18, ry:0.38, role:'DEF'}, {rx:0.18, ry:0.62, role:'DEF'}, {rx:0.18, ry:0.85, role:'DEF'},
+        {rx:0.4, ry:0.28, role:'MIL'}, {rx:0.4, ry:0.5, role:'MIL'}, {rx:0.4, ry:0.72, role:'MIL'},
+        {rx:0.58, ry:0.2, role:'ATT'}, {rx:0.6, ry:0.5, role:'ATT'}, {rx:0.58, ry:0.8, role:'ATT'},
+      ],
+      '4-4-2': [
+        {rx:0.06, ry:0.5, role:'GK'},
+        {rx:0.18, ry:0.15, role:'DEF'}, {rx:0.18, ry:0.38, role:'DEF'}, {rx:0.18, ry:0.62, role:'DEF'}, {rx:0.18, ry:0.85, role:'DEF'},
+        {rx:0.4, ry:0.12, role:'MIL'}, {rx:0.4, ry:0.38, role:'MIL'}, {rx:0.4, ry:0.62, role:'MIL'}, {rx:0.4, ry:0.88, role:'MIL'},
+        {rx:0.58, ry:0.38, role:'ATT'}, {rx:0.58, ry:0.62, role:'ATT'},
+      ],
+      '3-5-2': [
+        {rx:0.06, ry:0.5, role:'GK'},
+        {rx:0.18, ry:0.25, role:'DEF'}, {rx:0.18, ry:0.5, role:'DEF'}, {rx:0.18, ry:0.75, role:'DEF'},
+        {rx:0.38, ry:0.1, role:'MIL'}, {rx:0.4, ry:0.32, role:'MIL'}, {rx:0.4, ry:0.5, role:'MIL'}, {rx:0.4, ry:0.68, role:'MIL'}, {rx:0.38, ry:0.9, role:'MIL'},
+        {rx:0.58, ry:0.38, role:'ATT'}, {rx:0.58, ry:0.62, role:'ATT'},
+      ],
+    };
+    const names = Object.keys(FORMATIONS);
+    const formation = FORMATIONS[names[Math.floor(Math.random()*names.length)]];
+    players = (pw > 240 && ph > 240) ? formation.map(f=>({
+      role: f.role,
+      hx: margin + f.rx*pw, hy: margin + f.ry*ph, // home position
+      x: margin + f.rx*pw, y: margin + f.ry*ph,
+      ang: Math.random()*Math.PI*2,
+      speed: 0.008 + Math.random()*0.006,
+      radius: 16 + Math.random()*12,
+      pulsePhase: Math.random()*Math.PI*2,
+      trail: []
+    })) : [];
+  }
+  let players = [];
+  window.addEventListener('resize', resize);
+  resize();
+
+  const LINK_DIST = 130;
+  let t = 0;
+  let running = true;
+  document.addEventListener('visibilitychange', ()=>{ running = !document.hidden; if(running) requestAnimationFrame(tick); });
+
+  function drawPitch(){
+    // Inset top-down pitch outline, centered, scaled to viewport — very low
+    // opacity so it reads as texture, not as a competing visual element.
+    const margin = Math.min(W,H)*0.06;
+    const pw = W - margin*2, ph = H - margin*2;
+    if(pw < 200 || ph < 200) return; // skip on very small viewports
+    const x0 = margin, y0 = margin;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(31,138,85,0.14)';
+    ctx.lineWidth = 1.5;
+    // outer boundary
+    ctx.strokeRect(x0, y0, pw, ph);
+    // halfway line
+    ctx.beginPath(); ctx.moveTo(x0+pw/2, y0); ctx.lineTo(x0+pw/2, y0+ph); ctx.stroke();
+    // center circle
+    const cr = Math.min(pw,ph)*0.09;
+    ctx.beginPath(); ctx.arc(x0+pw/2, y0+ph/2, cr, 0, Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(x0+pw/2, y0+ph/2, 2, 0, Math.PI*2); ctx.fillStyle='rgba(31,138,85,0.14)'; ctx.fill();
+    // penalty boxes (left & right)
+    const boxW = pw*0.14, boxH = ph*0.42;
+    ctx.strokeRect(x0, y0+(ph-boxH)/2, boxW, boxH);
+    ctx.strokeRect(x0+pw-boxW, y0+(ph-boxH)/2, boxW, boxH);
+    const goalW = pw*0.055, goalH = ph*0.18;
+    ctx.strokeRect(x0, y0+(ph-goalH)/2, goalW, goalH);
+    ctx.strokeRect(x0+pw-goalW, y0+(ph-goalH)/2, goalW, goalH);
+    // corner arcs
+    const cor = Math.min(pw,ph)*0.02;
+    [[x0,y0,0,Math.PI/2],[x0+pw,y0,Math.PI/2,Math.PI],[x0,y0+ph,-Math.PI/2,0],[x0+pw,y0+ph,Math.PI,Math.PI*1.5]]
+      .forEach(([cx,cy,a1,a2])=>{ ctx.beginPath(); ctx.arc(cx,cy,cor,a1,a2); ctx.stroke(); });
+    ctx.restore();
+  }
+
+  function drawHalos(){
+    // Slow-breathing floodlight glows in the far corners
+    const spots = [
+      {x:W*0.08, y:H*0.1, c:'6,182,212', base:0.05},
+      {x:W*0.94, y:H*0.15, c:'37,99,235', base:0.045},
+      {x:W*0.12, y:H*0.9, c:'217,142,43', base:0.035},
+    ];
+    spots.forEach((s,i)=>{
+      const pulse = 0.7 + 0.3*Math.sin(t*0.4 + i*2);
+      const r = Math.min(W,H)*0.32;
+      const grad = ctx.createRadialGradient(s.x,s.y,0, s.x,s.y,r);
+      grad.addColorStop(0, `rgba(${s.c},${s.base*pulse})`);
+      grad.addColorStop(1, `rgba(${s.c},0)`);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0,0,W,H);
+    });
+  }
+
+  function drawLabels(){
+    ctx.font = "500 11px 'IBM Plex Mono', monospace";
+    ctx.textAlign = 'center';
+    labels.forEach(l=>{
+      const alpha = Math.max(0, Math.sin(t*l.speed + l.phase)) * 0.16;
+      if(alpha <= 0.005) return;
+      ctx.fillStyle = `rgba(11,31,58,${alpha})`;
+      ctx.fillText(l.text, l.x, l.y);
+    });
+    ctx.textAlign = 'left';
+  }
+
+  function drawRunnerSilhouette(p, moveAngle){
+    // Small procedural stick-silhouette with a running leg/arm swing — a
+    // stylized abstraction, not a real or photorealistic figure.
+    const s = 9; // scale
+    const runPhase = t*(6+p.speed*400) + p.pulsePhase;
+    const legSwing = Math.sin(runPhase) * 0.55;
+    const armSwing = Math.sin(runPhase + Math.PI) * 0.4;
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(moveAngle + Math.PI/2);
+    ctx.strokeStyle = 'rgba(6,182,212,0.32)';
+    ctx.lineWidth = 1.3;
+    ctx.lineCap = 'round';
+    // legs
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(Math.sin(legSwing)*s*0.5, s); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(Math.sin(-legSwing)*s*0.5, s); ctx.stroke();
+    // spine
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,-s*0.9); ctx.stroke();
+    // arms
+    ctx.beginPath(); ctx.moveTo(0,-s*0.7); ctx.lineTo(Math.sin(armSwing)*s*0.45, -s*0.2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,-s*0.7); ctx.lineTo(Math.sin(-armSwing)*s*0.45, -s*0.2); ctx.stroke();
+    ctx.restore();
+    // head (glow dot)
+    ctx.beginPath();
+    ctx.fillStyle = 'rgba(6,182,212,0.5)';
+    ctx.arc(p.x, p.y - s, 2.4, 0, Math.PI*2); ctx.fill();
+  }
+
+  function drawPlayers(){
+    if(players.length === 0) return;
+
+    // Update positions: gentle orbit around each player's home spot —
+    // reads as "positional play" without pretending to be real tactical AI.
+    players.forEach(p=>{
+      const prevX = p.x, prevY = p.y;
+      p.ang += p.speed;
+      p.x = p.hx + Math.cos(p.ang)*p.radius;
+      p.y = p.hy + Math.sin(p.ang*0.8)*p.radius*0.6;
+      p.moveAngle = Math.atan2(p.y-prevY, p.x-prevX) || 0;
+      p.trail.push({x:p.x, y:p.y});
+      if(p.trail.length > 14) p.trail.shift();
+    });
+
+    // Holographic ball travelling between players during a "pass" — shaded
+    // sphere (radial gradient for volume), rotating seam lines, a bounce arc
+    // simulating gravity/juggling, a soft ground shadow, and a fading trail.
+    if(!window.__ballTrail) window.__ballTrail = [];
+    if(!window.__activePass || t > window.__activePass.until){
+      const i = Math.floor(Math.random()*players.length);
+      let j = Math.floor(Math.random()*players.length);
+      if(j===i) j = (j+1)%players.length;
+      window.__activePass = {from:players[i], to:players[j], start:t, until:t+1.1};
+    }
+    const ap = window.__activePass;
+    if(ap){
+      const pT = Math.min(1, (t-ap.start)/(ap.until-ap.start));
+      ctx.strokeStyle = 'rgba(6,182,212,0.08)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(ap.from.x,ap.from.y); ctx.lineTo(ap.to.x,ap.to.y); ctx.stroke();
+
+      // Main travel arc + extra small "juggling" bounces layered on top
+      const travelArc = Math.sin(pT*Math.PI) * 12;
+      const juggleBounce = Math.abs(Math.sin(pT*Math.PI*5)) * 3.5;
+      const hop = travelArc + juggleBounce;
+      const bx = ap.from.x + (ap.to.x-ap.from.x)*pT;
+      const by = ap.from.y + (ap.to.y-ap.from.y)*pT - hop;
+      const groundY = ap.from.y + (ap.to.y-ap.from.y)*pT; // where the shadow sits
+
+      // trail
+      window.__ballTrail.push({x:bx,y:by});
+      if(window.__ballTrail.length > 10) window.__ballTrail.shift();
+      window.__ballTrail.forEach((pt,i)=>{
+        const a3 = (i/window.__ballTrail.length) * 0.22;
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(6,182,212,${a3})`;
+        ctx.arc(pt.x, pt.y, 1.6, 0, Math.PI*2);
+        ctx.fill();
+      });
+
+      // ground shadow — flattens/fades as the ball rises
+      const shadowScale = Math.max(0.25, 1 - hop/22);
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(11,31,58,${0.14*shadowScale})`;
+      ctx.ellipse(bx, groundY+2, 4.2*shadowScale, 1.6*shadowScale, 0, 0, Math.PI*2);
+      ctx.fill();
+
+      // outer holographic aura
+      const auraGrad = ctx.createRadialGradient(bx,by,0, bx,by,9);
+      auraGrad.addColorStop(0, 'rgba(6,182,212,0.28)');
+      auraGrad.addColorStop(1, 'rgba(6,182,212,0)');
+      ctx.fillStyle = auraGrad;
+      ctx.beginPath(); ctx.arc(bx,by,9,0,Math.PI*2); ctx.fill();
+
+      // sphere body — radial gradient for volume, light source top-left
+      const ballR = 4;
+      const bodyGrad = ctx.createRadialGradient(bx-1.2,by-1.2,0.3, bx,by,ballR);
+      bodyGrad.addColorStop(0, 'rgba(230,250,255,0.95)');
+      bodyGrad.addColorStop(0.55, 'rgba(6,182,212,0.75)');
+      bodyGrad.addColorStop(1, 'rgba(11,31,58,0.55)');
+      ctx.beginPath();
+      ctx.fillStyle = bodyGrad;
+      ctx.arc(bx,by,ballR,0,Math.PI*2);
+      ctx.fill();
+
+      // rotating seam lines to suggest a spinning football
+      const spin = t*10;
+      ctx.save();
+      ctx.translate(bx,by);
+      ctx.rotate(spin);
+      ctx.strokeStyle = 'rgba(11,31,58,0.35)';
+      ctx.lineWidth = 0.6;
+      for(let k=0;k<3;k++){
+        ctx.beginPath();
+        ctx.ellipse(0,0, ballR, ballR*Math.abs(Math.cos(spin*0.6+k)), 0, 0, Math.PI*2);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // specular highlight
+      ctx.beginPath();
+      ctx.fillStyle = 'rgba(255,255,255,0.8)';
+      ctx.arc(bx-1.1, by-1.1, 0.8, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    players.forEach(p=>{
+      // zone of influence — large, very faint ring around the home position
+      const zonePulse = 0.7 + 0.3*Math.sin(t*0.5 + p.pulsePhase);
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(31,138,85,${0.05*zonePulse})`;
+      ctx.lineWidth = 1;
+      ctx.arc(p.hx, p.hy, p.radius*2.1, 0, Math.PI*2);
+      ctx.stroke();
+
+      // fading trail
+      p.trail.forEach((pt,i)=>{
+        const a2 = (i/p.trail.length) * 0.08;
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(37,99,235,${a2})`;
+        ctx.arc(pt.x, pt.y, 1.4, 0, Math.PI*2);
+        ctx.fill();
+      });
+      // holographic pulse ring behind the silhouette
+      const pulse = 0.55 + 0.45*Math.sin(t*1.6 + p.pulsePhase);
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(6,182,212,${0.12*pulse})`;
+      ctx.arc(p.x, p.y-4, 11+2*pulse, 0, Math.PI*2); ctx.fill();
+
+      drawRunnerSilhouette(p, p.moveAngle);
+
+      // generic role tag — never a fabricated name or stat
+      ctx.font = "500 8.5px 'IBM Plex Mono', monospace";
+      ctx.textAlign = 'center';
+      ctx.fillStyle = 'rgba(11,31,58,0.16)';
+      ctx.fillText(p.role, p.x, p.y-22);
+      ctx.textAlign = 'left';
+    });
+  }
+
+  function tick(){
+    if(!running) return;
+    t += 0.01;
+    ctx.clearRect(0,0,W,H);
+
+    drawHalos();
+    drawPitch();
+    drawPlayers();
+    drawLabels();
+
+    for(const n of nodes){
+      n.x += n.vx; n.y += n.vy;
+      if(n.x < 0 || n.x > W) n.vx *= -1;
+      if(n.y < 0 || n.y > H) n.vy *= -1;
+    }
+
+    // Connecting lines between nearby nodes
+    for(let i=0;i<nodes.length;i++){
+      for(let j=i+1;j<nodes.length;j++){
+        const a = nodes[i], b = nodes[j];
+        const dx = a.x-b.x, dy = a.y-b.y;
+        const dist = Math.sqrt(dx*dx+dy*dy);
+        if(dist < LINK_DIST){
+          const alpha = (1 - dist/LINK_DIST) * 0.10;
+          ctx.strokeStyle = `rgba(37,99,235,${alpha})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Nodes with a slow breathing glow
+    for(const n of nodes){
+      const pulse = 0.6 + 0.4*Math.sin(t*1.2 + n.phase);
+      ctx.beginPath();
+      ctx.fillStyle = n.c;
+      ctx.globalAlpha = 0.35 * pulse;
+      ctx.arc(n.x, n.y, n.r*2.2, 0, Math.PI*2);
+      ctx.fill();
+      ctx.globalAlpha = 0.7 * pulse;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
+// Real 3D football ball via Three.js/WebGL — genuine sphere geometry, lit by
+// simulated stadium floodlights, with a procedurally-drawn pentagon/hexagon
+// panel texture (no external image assets), spin, bounce, and a slow roll
+// drift across the pitch. Wrapped in a try/catch + feature check so the rest
+// of the app still works if WebGL or the CDN script is unavailable.
+(function(){
+  try{
+    if(typeof THREE === 'undefined') return;
+    const container = document.getElementById('ball3d');
+    if(!container || !window.WebGLRenderingContext) return;
+
+    const renderer = new THREE.WebGLRenderer({canvas: container, alpha: true, antialias: true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+    camera.position.set(0, 0.6, 4.2);
+    camera.lookAt(0,0,0);
+
+    // Procedural soccer-ball panel texture (pentagons on a white ground)
+    const tCanvas = document.createElement('canvas');
+    tCanvas.width = 512; tCanvas.height = 256;
+    const tctx = tCanvas.getContext('2d');
+    tctx.fillStyle = '#F4F4F2'; tctx.fillRect(0,0,512,256);
+    tctx.fillStyle = '#12202E';
+    function pentagon(cx,cy,r,rot){
+      tctx.beginPath();
+      for(let i=0;i<5;i++){
+        const a = rot + i*(Math.PI*2/5) - Math.PI/2;
+        const x = cx + Math.cos(a)*r, y = cy + Math.sin(a)*r;
+        i===0 ? tctx.moveTo(x,y) : tctx.lineTo(x,y);
+      }
+      tctx.closePath(); tctx.fill();
+    }
+    const rows = [ {y:22, n:6, r:16}, {y:80, n:8, r:18}, {y:150, n:8, r:18}, {y:216, n:6, r:16} ];
+    rows.forEach(row=>{
+      for(let i=0;i<row.n;i++){
+        const x = (512/row.n)*i + (512/row.n)/2;
+        pentagon(x, row.y, row.r, i*0.3);
+      }
+    });
+    tctx.strokeStyle='rgba(18,32,46,0.25)'; tctx.lineWidth=1;
+    for(let i=0;i<8;i++){ tctx.beginPath(); tctx.moveTo(i*64,0); tctx.lineTo(i*64,256); tctx.stroke(); }
+    const texture = new THREE.CanvasTexture(tCanvas);
+
+    const geometry = new THREE.SphereGeometry(1, 40, 40);
+    const material = new THREE.MeshStandardMaterial({
+      map: texture,
+      roughness: 0.45,
+      metalness: 0.08,
+      emissive: new THREE.Color(0x06B6D4),
+      emissiveIntensity: 0.05,
+    });
+    const ball = new THREE.Mesh(geometry, material);
+    scene.add(ball);
+
+    // Simulated stadium floodlights
+    const ambient = new THREE.AmbientLight(0x8899aa, 0.55);
+    scene.add(ambient);
+    const key = new THREE.DirectionalLight(0xffffff, 1.1);
+    key.position.set(3, 4, 3);
+    scene.add(key);
+    const rim = new THREE.DirectionalLight(0x2563EB, 0.5);
+    rim.position.set(-3, -1, -2);
+    scene.add(rim);
+    const accent = new THREE.PointLight(0x06B6D4, 0.6, 8);
+    accent.position.set(-1.5, 1, 2);
+    scene.add(accent);
+
+    // Soft holographic aura ring behind the ball
+    const auraGeo = new THREE.RingGeometry(1.15, 1.55, 48);
+    const auraMat = new THREE.MeshBasicMaterial({color:0x06B6D4, transparent:true, opacity:0.10, side:THREE.DoubleSide});
+    const aura = new THREE.Mesh(auraGeo, auraMat);
+    aura.position.z = -0.3;
+    scene.add(aura);
+
+    function resize3d(){
+      const size = container.clientWidth || 220;
+      renderer.setSize(size, size, false);
+      camera.aspect = 1;
+      camera.updateProjectionMatrix();
+    }
+    window.addEventListener('resize', resize3d);
+    resize3d();
+
+    let running3d = true;
+    document.addEventListener('visibilitychange', ()=>{ running3d = !document.hidden; if(running3d) requestAnimationFrame(loop); });
+
+    let t3 = 0;
+    function loop(){
+      if(!running3d) return;
+      t3 += 0.016;
+      // spin
+      ball.rotation.y += 0.012;
+      ball.rotation.x += 0.004;
+      // bounce (gravity-like ease, absolute sine for a "landing" feel) + slow roll drift
+      const bounce = Math.abs(Math.sin(t3*1.1)) * 0.35;
+      ball.position.y = bounce - 0.1;
+      ball.position.x = Math.sin(t3*0.35) * 0.5;
+      aura.position.x = ball.position.x;
+      aura.position.y = ball.position.y * 0.3 - 0.4;
+      aura.rotation.z += 0.003;
+      renderer.render(scene, camera);
+      requestAnimationFrame(loop);
+    }
+    loop();
+  } catch(e){
+    // Fail silently — this is a decorative accent, never block the app
+    console.warn('3D ball unavailable:', e);
+  }
+})();

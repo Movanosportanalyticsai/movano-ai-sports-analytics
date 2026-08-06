@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOVANO AI — Sports Analytics</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="splashScreen" class="splash"><img src="assets/splash.jpg" alt="MOVANO AI"></div>
+<div class="watermark"></div>
+<canvas id="bgNetwork" class="bg-network"></canvas>
+<canvas id="ball3d" class="ball-3d"></canvas>
+<div class="wrap">
+  <header>
+    <div class="brand-block">
+      <img src="assets/logo-badge.png" alt="Movano AI" class="brand-badge">
+      <div>
+        <h1>MOVANO AI</h1>
+        <p class="eyebrow" id="txt-eyebrow">SPORTS ANALYTICS</p>
+        <p class="tagline" id="txt-tagline">Intelligence artificielle d'analyse statistique du football</p>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="meta" id="txt-meta">xG attendus<br>d'après forme &amp; historique</div>
+      <div class="lang-toggle">
+        <button id="langFr" class="lang-active">FR</button>
+        <button id="langEn">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <p class="free-tag" id="txt-free">Outil gratuit, à titre indicatif uniquement</p>
+  <p class="age-tag" id="txt-age">18+ · Jouez de manière responsable</p>
+
+  <details class="guide">
+    <summary id="txt-guide-title">Comment l'utiliser</summary>
+    <ol id="txt-guide-list">
+      <li>Renseigne le nom des deux équipes.</li>
+      <li>Indique les buts marqués et encaissés en moyenne sur les 5 derniers matchs de chaque équipe.</li>
+      <li>Clique sur les boutons de forme (V / N / D) pour refléter les 5 derniers résultats, du plus ancien au plus récent.</li>
+      <li>Laisse la moyenne de la ligue par défaut, sauf si tu as une valeur plus précise pour la compétition concernée.</li>
+      <li>Clique sur "Calculer le pronostic" pour obtenir les buts attendus, les probabilités et le niveau de risque.</li>
+    </ol>
+  </details>
+
+  <div class="sheet">
+    <div class="team-col home">
+      <p class="team-label" id="txt-home-label">Domicile</p>
+      <input type="text" id="homeName" value="Équipe A">
+      <div class="field">
+        <label id="txt-scored-1">Buts marqués / match (5 derniers)</label>
+        <input type="number" id="homeScored" step="0.5" min="0" value="2">
+      </div>
+      <div class="field">
+        <label id="txt-conceded-1">Buts encaissés / match (5 derniers)</label>
+        <input type="number" id="homeConceded" step="0.5" min="0" value="1">
+      </div>
+      <details class="avg-helper">
+        <summary id="txt-avg-summary-1">Calculer la moyenne à partir des derniers matchs</summary>
+        <div class="avg-rows" id="homeAvgRows"></div>
+        <button type="button" class="avg-fill-btn" id="homeAvgFill"><span id="txt-avg-fill-1">Remplir automatiquement</span></button>
+      </details>
+      <div class="field">
+        <div class="form-header">
+          <label id="txt-form-1">Forme (du plus ancien au plus récent)</label>
+          <select id="homeFormCount" class="form-count">
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5" selected>5</option>
+          </select>
+        </div>
+        <div class="form-row" id="homeForm">
+          <button data-state="W" data-i="0">V</button>
+          <button data-state="N" data-i="1">N</button>
+          <button data-state="W" data-i="2">V</button>
+          <button data-state="W" data-i="3">V</button>
+          <button data-state="W" data-i="4">V</button>
+        </div>
+      </div>
+      <div class="home-toggle" id="txt-home-adv">▲ avantage du terrain appliqué</div>
+    </div>
+
+    <div class="vs">VS</div>
+
+    <div class="team-col away">
+      <p class="team-label" id="txt-away-label">Extérieur</p>
+      <input type="text" id="awayName" value="Équipe B">
+      <div class="field">
+        <label id="txt-scored-2">Buts marqués / match (5 derniers)</label>
+        <input type="number" id="awayScored" step="0.5" min="0" value="1.5">
+      </div>
+      <div class="field">
+        <label id="txt-conceded-2">Buts encaissés / match (5 derniers)</label>
+        <input type="number" id="awayConceded" step="0.5" min="0" value="1">
+      </div>
+      <details class="avg-helper">
+        <summary id="txt-avg-summary-2">Calculer la moyenne à partir des derniers matchs</summary>
+        <div class="avg-rows" id="awayAvgRows"></div>
+        <button type="button" class="avg-fill-btn" id="awayAvgFill"><span id="txt-avg-fill-2">Remplir automatiquement</span></button>
+      </details>
+      <div class="field">
+        <div class="form-header">
+          <label id="txt-form-2">Forme (du plus ancien au plus récent)</label>
+          <select id="awayFormCount" class="form-count">
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5" selected>5</option>
+          </select>
+        </div>
+        <div class="form-row" id="awayForm">
+          <button data-state="N" data-i="0">N</button>
+          <button data-state="W" data-i="1">V</button>
+          <button data-state="L" data-i="2">D</button>
+          <button data-state="W" data-i="3">V</button>
+          <button data-state="N" data-i="4">N</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <label class="xg-toggle" id="xgToggleWrap">
+    <input type="checkbox" id="xgToggle">
+    <span id="txt-xg-toggle">Utiliser les xG (expected goals) plutôt que les buts marqués, si tu les as</span>
+  </label>
+
+  <details class="guide" id="h2hDetails">
+    <summary id="txt-h2h-title">Confrontations directes (H2H) — optionnel</summary>
+    <div style="padding:0 20px 18px;">
+      <div class="field" style="max-width:340px;">
+        <label id="txt-h2h-desc">Sur les confrontations directes récentes, qui domine ?</label>
+        <select id="h2hBias" style="width:100%;background:rgba(27,35,64,0.04);border:1px solid var(--line);border-radius:2px;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:8px;">
+          <option value="0" id="h2h-opt-neutral">Équilibré / pas de tendance nette</option>
+          <option value="1" id="h2h-opt-home">Domicile domine l'historique</option>
+          <option value="2" id="h2h-opt-strong-home">Domicile domine largement</option>
+          <option value="-1" id="h2h-opt-away">Extérieur domine l'historique</option>
+          <option value="-2" id="h2h-opt-strong-away">Extérieur domine largement</option>
+        </select>
+      </div>
+    </div>
+  </details>
+
+  <div class="field" style="max-width:340px;margin:16px auto 0;">
+    <label id="txt-league">Moyenne de buts de la ligue / équipe / match</label>
+    <select id="leaguePreset" style="width:100%;background:rgba(27,35,64,0.04);border:1px solid var(--line);border-radius:2px;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:8px;margin-bottom:8px;">
+      <option value="1.35" id="lg-opt-default">Je ne sais pas / autre — valeur par défaut</option>
+      <option value="1.35" id="lg-opt-l1">Ligue 1 (≈1.35)</option>
+      <option value="1.45" id="lg-opt-pl">Premier League (≈1.45)</option>
+      <option value="1.35" id="lg-opt-liga">Liga (≈1.35)</option>
+      <option value="1.40" id="lg-opt-seriea">Serie A (≈1.40)</option>
+      <option value="1.55" id="lg-opt-bund">Bundesliga (≈1.55)</option>
+      <option value="1.40" id="lg-opt-ucl">Ligue des champions (≈1.40)</option>
+    </select>
+    <input type="number" id="leagueAvg" step="0.05" value="1.35">
+  </div>
+
+  <button class="compute" id="computeBtn">Calculer le pronostic</button>
+
+  <div class="results" id="results">
+    <div class="report-meta">
+      <div>📅 <span id="txt-generated-label">Généré le</span> : <b id="reportDate">–</b></div>
+      <div>🆔 <span id="txt-reportid-label">Report ID</span> : <b id="reportIdValue">–</b></div>
+      <div>🟢 <span id="txt-version-label">Version</span> : <b>v2.0</b></div>
+    </div>
+    <div class="xg-row">
+      <div>
+        <div class="xg-value" id="xgHome">–</div>
+        <div class="xg-label" id="txt-xg-home">xG domicile</div>
+      </div>
+      <div>
+        <div class="xg-value" id="xgAway">–</div>
+        <div class="xg-label" id="txt-xg-away">xG extérieur</div>
+      </div>
+    </div>
+
+    <div class="outcome-bar" id="outcomeBar">
+      <div class="seg-home" id="segHome"></div>
+      <div class="seg-draw" id="segDraw"></div>
+      <div class="seg-away" id="segAway"></div>
+    </div>
+    <div class="outcome-legend">
+      <span id="legHome">Victoire dom.</span>
+      <span id="legDraw">Nul</span>
+      <span id="legAway">Victoire ext.</span>
+    </div>
+
+    <div class="risk-badge" id="riskBadge">
+      <span class="risk-dot" id="riskDot"></span>
+      <span id="riskLabel">–</span>
+      <span class="risk-detail" id="riskDetail"></span>
+    </div>
+
+    <p class="matrix-title" id="txt-markets-title">Marchés — temps réglementaire</p>
+    <div class="markets-grid" id="marketsGrid"></div>
+
+    <p class="matrix-title" id="txt-matrix-title">Probabilité par score exact</p>
+    <table class="matrix" id="matrixTable"></table>
+
+    <p class="matrix-title" id="txt-top2-title">Les 2 scores exacts les plus probables</p>
+    <div class="top2-grid" id="top2Grid"></div>
+
+    <div class="confidence-badge" id="confidenceBadge">
+      <span id="txt-confidence-label">Indice de confiance</span> : <b id="confidenceValue">–</b>/100
+    </div>
+
+    <p class="matrix-title" id="txt-top10-title">Top 10 des scores les plus probables</p>
+    <ol class="top10-list" id="top10List"></ol>
+
+    <button class="save-btn" id="saveBtn">
+      <span id="txt-save-btn">Enregistrer ce pronostic</span>
+    </button>
+    <button class="save-btn" id="downloadImgBtn" disabled>
+      <span id="txt-download-img">📥 Télécharger en image</span>
+    </button>
+  </div>
+
+  <button class="save-btn" id="top4Btn" style="margin-top:14px;">
+    <span id="txt-top4-btn">🔥 Voir les 4 meilleurs pronostics</span>
+  </button>
+  <div class="top4-section" id="top4Section" style="display:none;">
+    <p class="matrix-title" id="txt-top4-title">🔥 Top 4 pronostics recommandés (parmi tes analyses enregistrées)</p>
+    <div id="top4List"></div>
+  </div>
+
+  <div class="history" id="historySection" style="display:none;">
+    <div class="history-head">
+      <p class="matrix-title" id="txt-history-title" style="margin:0;">Historique des pronostics</p>
+      <button class="export-btn" id="exportBtn"><span id="txt-export-btn">Exporter (.csv)</span></button>
+    </div>
+    <p class="accuracy-stat" id="accuracyStat"></p>
+    <div id="historyList"></div>
+    <p class="history-note" id="txt-history-note">Cet historique n'est conservé que pendant cette session — exporte-le si tu veux le garder.</p>
+  </div>
+
+  <footer>
+    <span id="txt-footer-model">Modèle : force d'attaque/défense relative à la moyenne de la ligue, ajustée par la forme récente (pondération croissante sur les 5 derniers matchs), puis distribution de Poisson sur les buts attendus. Outil indicatif — n'intègre pas blessures, absences ni contexte du match.</span>
+    <br><br>
+    <span id="txt-footer-disclaimer">⚠ Ce pronostic est une estimation statistique, pas une certitude. Aucun résultat sportif n'est garanti : si tu paries, ne mise que ce que tu peux te permettre de perdre. Réservé aux personnes majeures (18+). Jouez de manière responsable.</span>
+    <br><br>
+    <span class="brand-line" id="txt-brand">MOVANO AI — Code promo 1xbet : <b>Movano29</b></span>
+    <br><br>
+    <strong>MOVANO AI — Sports Analytics</strong><br>
+    <span id="txt-version">Version 1.0 | Créé le 30 juillet 2026</span><br>
+    <span id="txt-copyright">© Copyright 2026 Movano AI. All Rights Reserved.</span>
+    <br><br>
+    <span class="contact-line" id="txt-contact">Une difficulté avec l'outil ? Assistance : <b>01 63 56 88 29</b></span>
+
+    <div class="contact-block">
+      <p class="contact-title" id="txt-contact-title">Contactez-nous</p>
+      <p class="contact-sub" id="txt-contact-sub">Une question ? Un problème technique ? Une suggestion pour améliorer MOVANO AI SPORTS ANALYTICS ?</p>
+      <div class="contact-links">
+        <a href="mailto:tossajudicael5@gmail.com">📧 tossajudicael5@gmail.com</a>
+        <a href="https://www.facebook.com/profile.php?id=61592493794194" target="_blank" rel="noopener">📘 Facebook</a>
+        <a href="https://movano29.github.io/movano29-site/" target="_blank" rel="noopener">🌐 <span id="txt-official-site">Site officiel</span></a>
+      </div>
+      <p class="contact-hours" id="txt-contact-hours">Support : lundi – dimanche, 08h00 – 22h00 (GMT+1)</p>
+      <p class="contact-mission" id="txt-contact-mission">Notre mission : fournir des analyses statistiques avancées pour aider les passionnés de football à mieux s'informer — jamais des garanties de gain.</p>
+    </div>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
